@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Waiting Line — Staff</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Staff Panel</h1>
+    <button id="serve">Serve Next</button>
+    <h2>Now Serving: <span id="now">-</span></h2>
+    <h3>Queue</h3>
+    <ul id="queue"></ul>
+    <hr />
+    <p class="muted"><a href="/">Client page</a></p>
+  </div>
+
+  <script>
+    async function api(path, opts){
+      const r = await fetch(path, opts || {});
+      if (!r.ok) {
+        let err;
+        try { err = await r.json(); } catch(e) { err = await r.text(); }
+        throw err;
+      }
+      return r.json();
+    }
+
+    async function refresh(){
+      try {
+        const list = await api('/api/tickets?status=waiting');
+        const ul = document.getElementById('queue');
+        ul.innerHTML = '';
+        list.forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = `#${t.number} ${t.name ? '- ' + t.name : ''}`;
+          ul.appendChild(li);
+        });
+      } catch(e){
+        console.error(e);
+      }
+    }
+
+    document.getElementById('serve').addEventListener('click', async () => {
+      try {
+        const s = await api('/api/tickets/serve', { method: 'POST' });
+        document.getElementById('now').textContent = `#${s.number} ${s.name ? '- ' + s.name : ''}`;
+        refresh();
+      } catch (e) {
+        alert('No waiting ticket');
+      }
+    });
+
+    refresh();
+    setInterval(refresh, 4000);
+  </script>
+</body>
+</html>

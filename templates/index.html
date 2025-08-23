@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Waiting Line — Client</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Take a Ticket</h1>
+    <input id="name" placeholder="Name (optional)" />
+    <button id="take">Take Ticket</button>
+    <p id="ticket" class="notice"></p>
+
+    <h2>Queue (waiting)</h2>
+    <ul id="queue"></ul>
+
+    <hr />
+    <p class="muted">Staff? <a href="/staff">Open staff panel</a></p>
+  </div>
+
+  <script>
+    async function api(path, opts){
+      const r = await fetch(path, opts || {});
+      if (!r.ok) {
+        let err;
+        try { err = await r.json(); } catch(e) { err = await r.text(); }
+        throw err;
+      }
+      return r.json();
+    }
+
+    async function refresh(){
+      try {
+        const list = await api('/api/tickets?status=waiting');
+        const ul = document.getElementById('queue');
+        ul.innerHTML = '';
+        list.forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = `#${t.number} ${t.name ? '- ' + t.name : ''}`;
+          ul.appendChild(li);
+        });
+      } catch(e){
+        console.error(e);
+      }
+    }
+
+    document.getElementById('take').addEventListener('click', async () => {
+      const name = document.getElementById('name').value || null;
+      try {
+        const t = await api('/api/tickets', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        document.getElementById('ticket').textContent = `Your ticket: #${t.number}`;
+        refresh();
+      } catch (e) {
+        alert('Failed to take ticket');
+        console.error(e);
+      }
+    });
+
+    refresh();
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>
