@@ -92,7 +92,7 @@ def serve_next():
     return served
 
 def update_status(ticket_id, status):
-    if status not in ('waiting', 'served', 'cancelled'):
+    if status not in ('waiting', 'served'):
         raise ValueError("invalid status")
     conn = get_conn()
     cur = conn.cursor()
