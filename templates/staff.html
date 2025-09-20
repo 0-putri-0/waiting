@@ -4,20 +4,336 @@
   <meta charset="utf-8" />
   <title>Waiting Line — Staff</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    /* Variabel CSS untuk konsistensi tema */
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #7209b7;
+      --success: #06d6a0;
+      --warning: #ffd166;
+      --danger: #ef476f;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+      --border-radius: 12px;
+      --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    /* Reset dan gaya dasar */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wrap::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+    }
+
+    h1 {
+      color: var(--secondary);
+      margin-bottom: 25px;
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--dark);
+      margin: 30px 0 15px;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    h3 {
+      color: var(--dark);
+      margin: 25px 0 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--light-gray);
+      font-size: 1.3rem;
+    }
+
+    /* Now Serving Section */
+    .serving-container {
+      background: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+      color: white;
+      padding: 25px;
+      border-radius: var(--border-radius);
+      margin-bottom: 30px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .serving-label {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+
+    #now {
+      font-size: 2.5rem;
+      font-weight: 700;
+      display: block;
+      margin: 10px 0;
+      color: white;
+    }
+
+    .serving-placeholder {
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    /* Button */
+    #serve {
+      background-color: var(--success);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: block;
+      margin: 0 auto 30px;
+      box-shadow: 0 4px 12px rgba(6, 214, 160, 0.3);
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #serve:hover {
+      background-color: #05c28f;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(6, 214, 160, 0.4);
+    }
+
+    #serve:active {
+      transform: translateY(0);
+    }
+
+    #serve:disabled {
+      background-color: var(--light-gray);
+      color: var(--gray);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Queue list */
+    #queue {
+      list-style: none;
+      margin-bottom: 30px;
+    }
+
+    #queue li {
+      background: var(--light);
+      padding: 15px 20px;
+      margin-bottom: 10px;
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      animation: fadeIn 0.5s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--primary);
+    }
+
+    #queue li::before {
+      content: "•";
+      color: var(--primary);
+      font-weight: bold;
+      display: inline-block;
+      width: 1em;
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+
+    .queue-number {
+      font-weight: bold;
+      margin-right: 8px;
+      color: var(--primary);
+    }
+
+    .queue-empty {
+      text-align: center;
+      padding: 30px;
+      color: var(--gray);
+      font-style: italic;
+      background-color: var(--light);
+      border-radius: var(--border-radius);
+    }
+
+    /* Footer */
+    hr {
+      border: none;
+      height: 1px;
+      background-color: var(--light-gray);
+      margin: 30px 0;
+    }
+
+    .muted {
+      color: var(--gray);
+      text-align: center;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .wrap {
+        padding: 20px 15px;
+      }
+      
+      #now {
+        font-size: 2rem;
+      }
+      
+      .serving-container {
+        padding: 20px 15px;
+      }
+    }
+
+    /* Status indicators */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .status-waiting {
+      background-color: rgba(255, 209, 102, 0.2);
+      color: #b3870d;
+    }
+
+    /* Loading state */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Stats section */
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .stat-item {
+      padding: 15px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Staff Panel</h1>
-    <button id="serve">Serve Next</button>
-    <h2>Now Serving: <span id="now">-</span></h2>
-    <h3>Queue</h3>
+    
+    <button id="serve">Serve Next Customer</button>
+    
+    <div class="serving-container">
+      <span class="serving-label">Now Serving</span>
+      <span id="now" class="serving-placeholder">-</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-value" id="waiting-count">0</span>
+        <span class="stat-label">Waiting</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="served-count">0</span>
+        <span class="stat-label">Served Today</span>
+      </div>
+    </div>
+
+    <h3>Waiting Queue</h3>
     <ul id="queue"></ul>
+
     <hr />
-    <p class="muted"><a href="/">Client page</a></p>
+    <p class="muted"><a href="/">Go to Client page</a></p>
   </div>
 
   <script>
+    // State management
+    let servedTickets = JSON.parse(localStorage.getItem('servedTickets') || '0');
+    document.getElementById('served-count').textContent = servedTickets;
+
     async function api(path, opts){
       const r = await fetch(path, opts || {});
       if (!r.ok) {
@@ -33,27 +349,80 @@
         const list = await api('/api/tickets?status=waiting');
         const ul = document.getElementById('queue');
         ul.innerHTML = '';
-        list.forEach(t => {
+        
+        // Update waiting count
+        document.getElementById('waiting-count').textContent = list.length;
+        
+        if (list.length === 0) {
           const li = document.createElement('li');
-          li.textContent = `#${t.number} ${t.name ? '- ' + t.name : ''}`;
+          li.className = 'queue-empty';
+          li.textContent = 'No customers waiting';
           ul.appendChild(li);
-        });
+          
+          // Disable button when no one is waiting
+          document.getElementById('serve').disabled = true;
+        } else {
+          // Enable button when there are people waiting
+          document.getElementById('serve').disabled = false;
+          
+          list.forEach(t => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <span class="queue-number">#${t.number}</span>
+              ${t.name ? t.name : 'Customer'}
+              <span class="status-badge status-waiting">Waiting</span>
+            `;
+            ul.appendChild(li);
+          });
+        }
       } catch(e){
-        console.error(e);
+        console.error('Failed to refresh queue:', e);
       }
     }
 
     document.getElementById('serve').addEventListener('click', async () => {
+      const button = document.getElementById('serve');
+      
+      // Visual feedback
+      const originalText = button.textContent;
+      button.innerHTML = '<div class="spinner"></div> Processing...';
+      button.disabled = true;
+      
       try {
         const s = await api('/api/tickets/serve', { method: 'POST' });
-        document.getElementById('now').textContent = `#${s.number} ${s.name ? '- ' + s.name : ''}`;
+        
+        // Update now serving with animation
+        const nowElement = document.getElementById('now');
+        nowElement.textContent = `#${s.number} ${s.name ? '- ' + s.name : ''}`;
+        nowElement.classList.remove('serving-placeholder');
+        nowElement.style.animation = 'pulse 0.5s ease';
+        
+        // Remove animation after it completes
+        setTimeout(() => {
+          nowElement.style.animation = '';
+        }, 500);
+        
+        // Update served count
+        servedTickets++;
+        document.getElementById('served-count').textContent = servedTickets;
+        localStorage.setItem('servedTickets', servedTickets);
+        
+        // Refresh the queue
         refresh();
       } catch (e) {
         alert('No waiting ticket');
+        console.error(e);
+      } finally {
+        // Reset button state
+        button.textContent = originalText;
+        button.disabled = false;
       }
     });
 
+    // Initial load
     refresh();
+    
+    // Refresh every 4 seconds
     setInterval(refresh, 4000);
   </script>
 </body>
